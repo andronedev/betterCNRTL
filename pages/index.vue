@@ -41,7 +41,7 @@
             />
           </div>
           <div class="control">
-            <button class="button is-link is-success" v-on:click="go">
+            <button class="button is-link is-success" >
               Chercher
             </button>
           </div>
