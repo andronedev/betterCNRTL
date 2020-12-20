@@ -133,6 +133,7 @@ export default {
   position: absolute;
   right: 10px;
   top: 30px;
+  z-index: 99;
 }
 .title {
   font-family: "Quicksand", "Source Sans Pro", -apple-system, BlinkMacSystemFont,
