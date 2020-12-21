@@ -27,10 +27,10 @@
         </div>
       </div>
 
-      <div class="MainForm">
+      <div class="mt-5">
         <form
           v-on:submit.prevent="go"
-          class="field has-addons-centered has-addons"
+          class="field has-addons has-addons-centered"
         >
           <div class="control">
             <input
@@ -41,20 +41,32 @@
             />
           </div>
           <div class="control">
-            <button class="button is-link is-success" >
+            <button class="button is-link is-success">
               Chercher
             </button>
           </div>
         </form>
       </div>
-      <div class="container mt-4">
-        <div
-          v-if="contentHTML != ''"
-          class="card p-3"
-          v-html="contentHTML"
-        ></div>
-        <div v-else class="card p-3">
-          <h1>En attente de recherche ^^</h1>
+      
+      <div class="container mt-4 has-background-grey-light p-2 r-2">
+        <div class="tabs is-fullwidth is-boxed is-toggle">
+          <ul>
+            <li v-for="tab in endpoints" :key="tab.id">
+              <a @click="get(tab.id)">
+                <span>{{ tab.title }}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="card p-3 mt-3" v-if="c">
+          <p class="title is-4">{{ c.title }}</p>
+
+          <div v-html="c.html" class="htmlbox">
+          </div>
+        </div>
+        <div class="card p-3 mt-3" v-else>
+          <h1>Veuillez entrer votre recherche</h1>
         </div>
       </div>
     </div>
@@ -68,36 +80,85 @@ import { parse } from "node-html-parser";
 export default {
   data() {
     return {
-      contentHTML: "",
+      content: [],
+      c: {},
       mot: "",
-      errors: []
+      errors: [],
+      index: 0,
+      endpoints: [
+        {
+          id: 0,
+          url: "https://www.cnrtl.fr/definition/{q}",
+          title: "Definition",
+          selector: "#contentbox"
+        },
+        {
+          id: 1,
+          url: "https://www.cnrtl.fr/morphologie/{q}",
+          title: "Morphologie",
+          selector: "#contentbox"
+        },
+        {
+          id: 2,
+          url: "https://www.cnrtl.fr/etymologie/{q}",
+          title: "Etymologie",
+          selector: "#contentbox"
+        },
+        {
+          id: 3,
+          url: "https://www.cnrtl.fr/synonymie/{q}",
+          title: "Synonymie",
+          selector: "#contentbox"
+        },
+        {
+          id: 4,
+          url: "https://www.cnrtl.fr/antonymie/{q}",
+          title: "Antonymie",
+          selector: "#contentbox"
+        },
+        {
+          id: 5,
+          url: "https://www.cnrtl.fr/proxemie/{q}",
+          title: "Proxemie",
+          selector: "#contentbox"
+        },
+        {
+          id: 6,
+          url: "https://www.cnrtl.fr/concordance/{q}",
+          title: "Concordance",
+          selector: "#contentbox"
+        }
+      ]
     };
   },
   methods: {
     go() {
       self = this;
-      self.data = "";
+      self.content = [];
+      self.endpoints.forEach(point => {
+        axios
+          .get(point.url.replace("{q}", self.mot))
+          .then(function(response) {
+            var data = parse(response.data);
+            data = data.querySelector(point.selector);
+            if (response.status != 200 || data == null) {
+             
+              self.addError("Aucun resultats pour : " + point.title +  " de "+ self.mot);
+            } else {
+              self.content.push({id: point.id ,html : data, title : point.title});
+            }
+          })
+          .catch(function(error) {
+            console.log(error);
+            self.error = true;
+          })
+          .then(function() {
+            // always executed
+            if( point.id==0 ) self.get()
+            
 
-      axios
-        .get(`https://www.cnrtl.fr/definition/${self.mot}`)
-        .then(function(response) {
-          var data = parse(response.data);
-          data = data.querySelector("#lexicontent");
-          if (response.status != 200 || data == null) {
-            self.contentHTML = "";
-            self.addError("Aucun Resultats pour " + self.mot);
-          } else {
-            self.contentHTML = data;
-          }
-        })
-        .catch(function(error) {
-          console.log(error);
-          self.data = "";
-          self.error = true;
-        })
-        .then(function() {
-          // always executed
-        });
+          });
+      });
     },
     addError(err = "Erreur") {
       var e = self.errors.push({ msg: err, date: new Date() });
@@ -115,6 +176,11 @@ export default {
           });
         } catch (_) {}
       }, 1000);
+    },
+    get(i=0){
+      self = this
+      self.c = self.content.find(item => item.id === i);
+
     }
   },
   mounted() {
@@ -140,14 +206,21 @@ export default {
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-.MainForm {
-  padding-top: 15px;
+.r-2 {
+  border-radius: 2px;
 }
-
 .tlf_cdefinition {
   background-color: #98ec38a9;
 }
 .tlf_csyntagme {
   background-color: #c0fffaa9;
+}
+.tabs ul {
+	flex-shrink: 1;
+	flex-wrap: wrap;
+	border-bottom-color: transparent;
+}
+.htmlbox{
+  overflow-x: scroll;
 }
 </style>
