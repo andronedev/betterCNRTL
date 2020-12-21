@@ -8,7 +8,7 @@
               BetterCNRTL
             </h1>
             <h2 class="subtitle">
-              CNRTL.fr avec une interface amélioré !
+              <a href="https://www.cnrtl.fr" target="_blank">CNRTL.fr</a> avec une interface amélioré !
             </h2>
           </div>
         </div>
@@ -52,20 +52,20 @@
         <div class="tabs is-fullwidth is-boxed is-toggle">
           <ul>
             <li v-for="tab in endpoints" :key="tab.id">
-              <a @click="get(tab.id)">
+              <a @click="get(tab.id)" class="keept">
                 <span>{{ tab.title }}</span>
               </a>
             </li>
           </ul>
         </div>
 
-        <div class="card p-3 mt-3" v-if="c">
+        <div class="card p-3 mt-3" v-if="mot">
           <p class="title is-4">{{ c.title }}</p>
 
           <div v-html="c.html" class="htmlbox"></div>
         </div>
         <div class="card p-3 mt-3" v-else>
-          <h1>Veuillez entrer votre recherche</h1>
+          <h1>Veuillez entrer votre recherche.</h1>
         </div>
       </div>
     </div>
@@ -148,8 +148,11 @@ export default {
             } else {
               var html = data;
               if (point.id == 0) {
-                var opts = datasrc.querySelector("#vtoolbar");
 
+                
+           
+                var opts = datasrc.querySelector("#vtoolbar");
+                if(!opts) return self.addError("Aucun resultats pour : " + point.title + " de " + self.mot)
                 if (opts.childNodes[0].childNodes.length > 1) {
                   console.log(opts.childNodes[0].childNodes);
                   for (
@@ -198,7 +201,7 @@ export default {
     addError(err = "Erreur") {
       var e = self.errors.push({ msg: err, date: new Date() });
     },
-    deleteNotifs() {
+    async deleteNotifs() {
       var maxLifespan = 2500;
       self = this;
       // check once per second
@@ -215,10 +218,27 @@ export default {
     get(i = 0) {
       self = this;
       self.c = self.content.find(item => item.id === i);
-    }
+    },
+    async hackLinks(){
+      self = this
+      var getUrl = window.location;
+      var baseUrl = getUrl .protocol + "//" + getUrl.host;
+      setInterval(function checklinks() {
+      var links = document.getElementsByTagName("a");
+      for (var i = 0; i < links.length; i++) {
+          if(!links[i].href.includes("cnrtl.fr") && !links[i].className.includes("keept")){
+          var path = links[i].href.replace(baseUrl,"")
+          links[i].href = "https://www.cnrtl.fr" + path
+          links[i].target = "_blank"
+          }
+      }
+      },1000)
+      }
   },
   mounted() {
     this.deleteNotifs();
+    this.hackLinks()
+    
   }
 };
 </script>
@@ -260,4 +280,5 @@ export default {
 td img {
   height: 10px;
 }
+
 </style>
