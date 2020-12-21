@@ -47,7 +47,7 @@
           </div>
         </form>
       </div>
-      
+
       <div class="container mt-4 has-background-grey-light p-2 r-2">
         <div class="tabs is-fullwidth is-boxed is-toggle">
           <ul>
@@ -58,12 +58,11 @@
             </li>
           </ul>
         </div>
-        
+
         <div class="card p-3 mt-3" v-if="c">
           <p class="title is-4">{{ c.title }}</p>
 
-          <div v-html="c.html" class="htmlbox">
-          </div>
+          <div v-html="c.html" class="htmlbox"></div>
         </div>
         <div class="card p-3 mt-3" v-else>
           <h1>Veuillez entrer votre recherche</h1>
@@ -132,20 +131,58 @@ export default {
     };
   },
   methods: {
-    go() {
+     go() {
       self = this;
       self.content = [];
       self.endpoints.forEach(point => {
         axios
           .get(point.url.replace("{q}", self.mot))
-          .then(function(response) {
-            var data = parse(response.data);
-            data = data.querySelector(point.selector);
+          .then(async function(response) {
+            var datasrc = parse(response.data);
+            var data = datasrc.querySelector(point.selector);
+
             if (response.status != 200 || data == null) {
-             
-              self.addError("Aucun resultats pour : " + point.title +  " de "+ self.mot);
+              self.addError(
+                "Aucun resultats pour : " + point.title + " de " + self.mot
+              );
             } else {
-              self.content.push({id: point.id ,html : data, title : point.title});
+              var html = data;
+              if (point.id == 0) {
+                var opts = datasrc.querySelector("#vtoolbar");
+
+                if (opts.childNodes[0].childNodes.length > 1) {
+                  console.log(opts.childNodes[0].childNodes);
+                  for (
+                    var i = 1;
+                    i < opts.childNodes[0].childNodes.length;
+                    i++
+                  ) {
+                     await axios
+                        .get(
+                          self.endpoints[0].url.replace("{q}", self.mot) +
+                            "/" +
+                            i
+                        )
+                        .then(result => {
+                         var rdata = parse(result.data);
+                          html += "<hr>" + rdata.querySelector(point.selector);
+                        })
+                        .catch(function(error) {
+                          console.log(error);
+                          self.error = true;
+                        });
+                      //
+                    
+                  } 
+                  
+                }
+              }
+
+              self.content.push({
+                id: point.id,
+                html: html,
+                title: point.title
+              });
             }
           })
           .catch(function(error) {
@@ -154,9 +191,7 @@ export default {
           })
           .then(function() {
             // always executed
-            if( point.id==0 ) self.get()
-            
-
+            if (point.id == 0) self.get();
           });
       });
     },
@@ -177,10 +212,9 @@ export default {
         } catch (_) {}
       }, 1000);
     },
-    get(i=0){
-      self = this
+    get(i = 0) {
+      self = this;
       self.c = self.content.find(item => item.id === i);
-
     }
   },
   mounted() {
@@ -216,11 +250,14 @@ export default {
   background-color: #c0fffaa9;
 }
 .tabs ul {
-	flex-shrink: 1;
-	flex-wrap: wrap;
-	border-bottom-color: transparent;
+  flex-shrink: 1;
+  flex-wrap: wrap;
+  border-bottom-color: transparent;
 }
-.htmlbox{
-  overflow-x: scroll;
+.htmlbox {
+  overflow-x: auto;
+}
+td img {
+  height: 10px;
 }
 </style>
