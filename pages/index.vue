@@ -8,7 +8,7 @@
               BetterCNRTL
             </h1>
             <h2 class="subtitle">
-              <a href="https://www.cnrtl.fr" target="_blank">CNRTL.fr</a> avec une interface amélioré !
+              <a href="https://www.cnrtl.fr" target="_blank">CNRTL.fr</a> mais en mieux :)
             </h2>
           </div>
         </div>
