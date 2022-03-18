@@ -1,5 +1,10 @@
 # betterCNRTL
 
+<p>betterCNRTL est une version ameliorée du site <a target="_blank" href="https://cnrtl.fr">CNRTL.fr</a>. La version ameliorée est disponible sur <a target="_blank" href="https://bettercnrtl.androne.dev">bettercnrtl.androne.dev</a>.
+  Une version mobile est aussi disponible sur <a target="_blank" href="https://play.google.com/store/apps/details?id=dev.androne.dico">Google Play</a>
+</p>
+
+
 ## Build Setup
 
 ```bash
